@@ -1,0 +1,2205 @@
+<html><head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Öğrenci Sınav Sonuçları Detay - ANKARA ÜNİVERSİTESİ - KAMPÜS BİLGİ YÖNETİM SİSTEMİ</title>
+    <!--[if !lte IE 9]>
+    <script>
+        document.location.href = "https://obs.ankara.edu.tr/integration/oldbrowser";
+    </script>
+    <![endif]-->
+    <link href="https://obs.ankara.edu.tr/content/themes/strategia-cims/css?v=CJO2-W07NkiFTHTnAP5kYWAe8wzWGaoIl72abekqNBY1" rel="stylesheet">
+
+<link rel="stylesheet" type="text/css" href="https://obs.ankara.edu.tr/Content/themes/sweetalert2.min.css">
+
+    <script src="https://obs.ankara.edu.tr/bundles/strategia-aquincum?v=agu2zlnSpa2YmGsCiZ-9XlNwunVy_C1NQuiYDzsQ40U1"></script><style type="text/css">.CRZ{table-layout:fixed;}.CRZ td,.CRZ th{overflow:hidden}.CRC{height:0px;position:relative;}.CRG{margin-left:-5px;position:absolute;z-index:5;}.CRG .CRZ{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;top:0px}.CRL{position:absolute;width:1px}.CRD{ border-left:1px dotted black}</style>
+<script src="https://obs.ankara.edu.tr/bundles/strategia-cims?v=ylX4oiJpu4pa4FMtKlVOn8bmJv3fKs9bH9y-EJww6z41"></script>
+<script src="https://obs.ankara.edu.tr/bundles/jqueryval?v=gblb2YFE942mrNObEqLXoKiqNzcJVpTMoWqOjOgsPDI1"></script>
+
+
+<script src="https://obs.ankara.edu.tr/Scripts/jquery.blockUI.js"></script>
+<script src="https://obs.ankara.edu.tr/Scripts/sweetalert2.js"></script>
+<script src="https://obs.ankara.edu.tr/Scripts/strategia/strategia.cims.validation.js"></script>
+    
+    
+    
+
+<script>
+    ERROR_MESSAGES = { "UndefinedError": "Bilinmeyen bir hata oluştu.L&#252;tfen sistem y&#246;neticiniz ile irtibata ge&#231;iniz.", "ErrorWidgetLoad": "Widget y&#252;klenirken bir hata oluştu." };
+    GLOBAL_VARIABLES = { "UserNo": "374959", MonthNames: ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eyl&#252;l", "Ekim", "Kasım", "Aralık"], MonthNamesShort: ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"], DayNames: ["Pazar", "Pazartesi", "Salı", "&#199;arşamba", "Perşembe", "Cuma", "Cumartesi"], DayNamesShort: ["Paz", "Pts", "Sal", "&#199;ar", "Per", "Cum", "Cts"], LoaderImagePath: "/content/themes/aquincum/images/elements/loaders/8.gif", HelpNoContent: 'İlgili sayfa i&#231;in yardım i&#231;eriği bulunamadı.', SaveButtonText: 'Kaydet', CancelButtonText: 'İptal', YesButtonText: 'Evet', NoButtonText: 'Hayır', CloseButtonText: 'Kapat', ReportViewer : 'Rapor G&#246;r&#252;nt&#252;leme Ekranı', RequiredField : 'Bu alan gerekli.', ValidEmail : 'Ge&#231;erli e-posta adresi girilmelidir.' };
+    SESSION_COUNTER = { "AutoLogOffMessage": "1 dk sonra oturumunuz kapatılacaktır!<br />Çalışmanızı kaydedin veya sayfayı yenileyin...", "SessionTime": "120" };
+</script>
+</head>
+<body>
+    <div class="page_spinner" style="display: none;"></div>
+    
+    <div class="strategia-custom-dialog"></div>
+    <div class="strategia-custom-dialog-2x"></div>
+    
+
+    <script>
+        
+
+        //OBS-5348
+        function AnketKontrol() {
+            $.ajax({
+                url: '/student/SurveyGenelKontrol',
+                data: null,
+                cache: false,
+                type: 'GET',
+                success: function (result) {
+                    if (result && result.AnketGoster == true) {
+                        AnketGosterGenel();
+                    }
+                },
+                error: function (xhr, status, error) {
+
+                }
+            });
+        }
+
+        function AnketGosterGenel() {
+            ShowLoader();
+            //OBS-5348
+
+            var syllabus = null;
+
+            $dialog_view = $(".strategia-dialog").dialog({
+                title: 'Anket',
+                width: 500,
+                height: 500,
+                close: function (event, ui) {
+                    $(this).empty().dialog('destroy');
+                    $('.formError').remove();
+                },
+                modal: true,
+                bgiframe: true,
+                autoOpen: false,
+                resizable: true,
+                buttons: {
+                    Kaydet: function () {
+                        ShowLoader();
+                        var form = $('form', this);
+                        $.ajax({
+                            url: 'https://obs.ankara.edu.tr/student/SurveyGenel',
+                            data: form.serialize(),
+                            cache: false,
+                            type: 'POST',
+                            success: function (result) {
+                                HideLoader();
+                                if (result.Action != undefined) {
+                                    ExecuteResult(result);
+
+                                    if (result.Action == 'Information') {
+                                        $dialog_view.dialog("close");
+                                    }
+                                    return false;
+                                }
+                                else {
+                                    //$('#noteview-survey-' + result.syllabusNo).closest('td').html(result.letterGrade);
+                                    //$('#noteview-survey-' + result.syllabusNo).hide();
+                                    //$('#studentlesson-view-' + result.syllabusNo).addClass('list-student-lesson');
+                                    //$('#studentlesson-view-' + result.syllabusNo).attr('title', 'Öğrenci Dersleri');
+
+                                    //$('#confirmationReport-list').find('tbody').html(result.Model);
+                                }
+
+                                $dialog_view.dialog("close");
+                            },
+                            error: function (xhr, status, error) {
+                                HideLoader();
+                                Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                            }
+                        });
+
+                    },
+                    //Kapat: function () {
+                    //    $(this).dialog("close");
+                    //}
+                }
+            });
+
+            $.ajax({
+                url: 'https://obs.ankara.edu.tr/student/SurveyGenel',
+                data: { syllabusNo: syllabus },
+                cache: false,
+                type: 'GET',
+                success: function (result) {
+
+                    if (result.Action != undefined) {
+                        ExecuteResult(result);
+                        return false;
+                    }
+
+                    $dialog_view.dialog("open");
+                    $dialog_view.html(result);
+                    $(".ui-dialog-content").find(".check, .check :checkbox, input:radio, input:file").uniform();
+                    HideLoader();
+                },
+                error: function (xhr, status, error) {
+                    HideLoader();
+                    Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                }
+            });
+
+            // $(".ui-dialog-titlebar-close").css("display", "none");
+            $("span:contains('Anket')").closest('div').find('.ui-dialog-titlebar-close').css("display", "none");
+            return false;
+        }
+
+        function hazirlikHarcBorcu() {
+            $.ajax({
+                url: 'https://obs.ankara.edu.tr/student/HazirlikHarcBorcu',
+                cache: false,
+                type: 'POST',
+                success: function (result) {
+                    if (result.Action == 'Failure') {
+                        // Dialog(result.Message);
+                        var harc = parseInt(result.Message);
+                        if (harc > 0)
+                        {
+                            $("#borcLi").show(200);
+                            $("#borcMiktar").html(result.Message + " TL");
+                        }
+
+                        return false;
+                    }
+                },
+                error: function (xhr, status, error) {
+                    HideLoader();
+                    Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                }
+            });
+        }
+
+        function kutuphaneKayitTercih(value) {
+            $.ajax({
+                url: 'https://obs.ankara.edu.tr/student/kutuphaneKayitTercih',
+                type: 'POST',
+                cache: false,
+                data: { tercih: value },
+                success: function (result) {
+                    $dialog_viewKutuphane.dialog("close");
+                    if (result.Action != undefined) {
+                        ExecuteResult(result);
+                    }
+                    HideLoader();
+                    return false;
+                },
+                error: function (xhr, status, error) {
+                    $dialog_viewKutuphane.dialog("close");
+                    if (result.Action != undefined) {
+                        ExecuteResult(result);
+                    }
+                    HideLoader();
+                    return false;
+                }
+            });
+        }
+
+        function kutuphaneKayit(value) {
+            $dialog_viewKutuphane = $(".strategia-dialog").dialog({
+                title: 'Kütüphane Kayit İşlemi.',
+                width: 600,
+                height: 660,
+                close: function (event, ui) {
+                    $(this).empty().dialog('destroy');
+                    $('.formError').remove();
+                },
+                modal: true,
+                bgiframe: true,
+                autoOpen: false,
+                resizable: true,
+            });
+
+            $.ajax({
+                url: 'https://obs.ankara.edu.tr/student/KutupHaneKayit',
+                cache: false,
+                type: 'GET',
+                data: { tercih: value },
+                success: function (result) {
+                    if (result.Action != undefined) {
+                        if (result.Message) {
+                            Dialog(result.Message);
+                        } else {
+                            ExecuteResult(result);
+                        }
+                        //ExecuteResult(result);
+
+                        return false;
+                    }
+                    if (result != null && result != undefined && result.length > 5) {
+                        $dialog_viewKutuphane.dialog("open");
+                        $dialog_viewKutuphane.html(result);
+                        $(".ui-dialog-content").find(".check, .check :checkbox, input:radio, input:file").uniform();
+                        HideLoader();
+                    }
+
+                },
+                error: function (xhr, status, error) {
+                    HideLoader();
+                    Dialog('Önceden Kütüphane kaydınız yapılmıştır!');
+                }
+            });
+        }
+
+
+        function kartTercihi(value) {
+            $dialog_view = $(".strategia-dialog").dialog({
+                title: 'Anket',
+                width: 600,
+                height: 500,
+                close: function (event, ui) {
+                    $(this).empty().dialog('destroy');
+                    $('.formError').remove();
+                },
+                modal: true,
+                bgiframe: true,
+                autoOpen: false,
+                resizable: true,
+                buttons: {
+                    Kaydet: function () {
+                        ShowLoader();
+                        var form = $('form', this);
+                        $.ajax({
+                            url: '/student/SurveyBasari',
+                            data: form.serialize(),
+                            cache: false,
+                            type: 'POST',
+                            success: function (result) {
+                                HideLoader();
+                                if (result.Action != undefined) {
+                                    ExecuteResult(result);
+                                    return false;
+                                }
+                                else {
+                                    $('#confirmationReport-list').find('tbody').html(result.Model);
+                                }
+
+                                $dialog_view.dialog("close");
+                            },
+                            error: function (xhr, status, error) {
+                                HideLoader();
+                                Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                            }
+                        });
+
+                    },
+                    Kapat: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+
+            $.ajax({
+                url: 'https://obs.ankara.edu.tr/student/SurveyBasari',
+                cache: false,
+                type: 'GET',
+                success: function (result) {
+                    if (result.Action != undefined) {
+                        ExecuteResult(result);
+
+                        return false;
+                    }
+                    if (result != null && result != undefined && result.length > 5) {
+                        $dialog_view.dialog("open");
+                        $dialog_view.html(result);
+                        $(".ui-dialog-content").find(".check, .check :checkbox, input:radio, input:file").uniform();
+                        HideLoader();
+                    }
+
+                },
+                error: function (xhr, status, error) {
+                    HideLoader();
+                    Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                }
+            });
+        }
+
+
+
+        function ecampusGiris() {
+
+            var ogrenciMi = false;
+
+            var egitmenMi = false;
+            $.ajax({
+                url: 'https://obs.ankara.edu.tr/student/MoodleGirisYetkiKontrol',
+                dataType: "json",
+                cache: false,
+                type: 'GET',
+                success: function (result) {
+                    debugger;
+                    for (var i = 0; i < result.length; i++) {
+                        if (result[i].yetki == "ogrenci") {
+                            ogrenciMi = true;
+                        }
+                        else if (result[i].yetki == "egitmen") {
+                            egitmenMi = true;
+                        }
+                    }
+                    
+                    debugger;
+
+                    if (ogrenciMi == true & egitmenMi == true) {
+
+                        debugger;
+                        $dialog_viewEkampusEgitmenOgrenci = $(".strategia-dialog").dialog({
+                            title: "e-Kampüs OYS'ye Giriş",
+                            width: 600,
+                            height: 500,
+                            close: function (event, ui) {
+                                $(this).empty().dialog('destroy');
+                                $('.formError').remove();
+                            },
+                            modal: true,
+                            bgiframe: true,
+                            autoOpen: false,
+                            resizable: true,
+                            buttons: {
+                                "e-Kampus OYS Eğitmen Giriş": function () {
+
+                                    $.ajax({
+
+                                        url: '/student/MoodleGirisEgitmen',
+                                        dataType: "json",
+                                        cache: false,
+                                        type: 'GET',
+                                        success: function (resultEgitmen) {                            
+                                            var user, pass;
+                                            user = resultEgitmen.username;
+                                            pass = resultEgitmen.password;
+                                            if (user != null && pass != null) {
+                                                const form = document.createElement('form');
+                                                form.method = 'post';
+                                                //form.target = '_blank';
+                                                form.action = 'https://ekampus.ankara.edu.tr/login/index.php';
+                                            
+                                                const hiddenField1 = document.createElement('input');
+                                                hiddenField1.type = 'text';
+                                                hiddenField1.name = 'username';
+                                                hiddenField1.value = user;
+                                            
+                                                const hiddenField2 = document.createElement('input');
+                                                hiddenField2.type = 'password';
+                                                hiddenField2.name = 'password';
+                                                hiddenField2.value = pass;
+                                            
+                                                form.appendChild(hiddenField1);
+                                                form.appendChild(hiddenField2);
+                                            
+                                                document.body.appendChild(form);
+                                                form.submit();
+                                            }
+                                        },
+                                        error: function (xhr, status, error) {
+                                            HideLoader();
+                                            Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                                        }
+                                    });
+
+                                },
+                                "e-Kampus OYS Öğrenci Giriş": function () {
+
+                                    $.ajax({
+
+                                        url: 'https://obs.ankara.edu.tr/student/MoodleGirisOgrenci',
+                                        dataType: "json",
+                                        cache: false,
+                                        type: 'GET',
+                                        success: function (resultOgrenci) {
+                                            var user, pass;
+                                            user = resultOgrenci.username;
+                                            pass = resultOgrenci.password;
+                                            if (user != null && pass != null) {
+                                                const form = document.createElement('form');
+                                                form.method = 'post';
+                                                //form.target = '_blank';
+                                                form.action = 'https://ekampus.ankara.edu.tr/login/index.php';
+
+                                                const hiddenField1 = document.createElement('input');
+                                                hiddenField1.type = 'text';
+                                                hiddenField1.name = 'username';
+                                                hiddenField1.value = user;
+
+                                                const hiddenField2 = document.createElement('input');
+                                                hiddenField2.type = 'password';
+                                                hiddenField2.name = 'password';
+                                                hiddenField2.value = pass;
+
+                                                form.appendChild(hiddenField1);
+                                                form.appendChild(hiddenField2);
+
+                                                document.body.appendChild(form);
+                                                form.submit();
+                                            }
+                                        },
+                                        error: function (xhr, status, error) {
+                                            HideLoader();
+                                            Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                                        }
+                                    });
+
+                                },
+                                Kapat: function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+
+                        });
+
+                        $dialog_viewEkampusEgitmenOgrenci.dialog("open");
+                        $dialog_viewEkampusEgitmenOgrenci.html("Hem öğrenci, hemde eğitmen bilginiz bulunmaktadır. Aşağıdan istediğiniz rolde e-Kampüs sistemine giriş yapabilirsiniz.");
+
+
+                    }
+                    else if (ogrenciMi == true & egitmenMi == false) {
+                        $.ajax({
+                            url: 'https://obs.ankara.edu.tr/student/OYSDersGetir',
+                            dataType: "json",
+                            cache: false,
+                            type: 'GET',
+                            success: function (resultOgrenci) {
+                                if (resultOgrenci.Sonuc == true) {
+                                    debugger;
+                                    $dialog_vieweKampusOgrenci = $(".strategia-dialog").dialog({
+                                        title: "e-Kampüs OYS'ye Giriş",
+                                        width: 600,
+                                        height: 500,
+                                        close: function (event, ui) {
+                                            $(this).empty().dialog('destroy');
+                                            $('.formError').remove();
+                                        },
+                                        modal: true,
+                                        bgiframe: true,
+                                        autoOpen: false,
+                                        resizable: true,
+                                        buttons: {
+                                            "e-Kampüs OYS Öğrenci Giriş": function () {
+                                                ShowLoader();
+                                                var form = $('form', this);
+                                                var user, pass;
+                                                $.ajax({
+                                                    url: '/student/MoodleGirisOgrenci',
+                                                    dataType: "json",
+                                                    cache: false,
+                                                    type: 'GET',
+                                                    success: function (resultOgrenciDers) {
+                                                        user = resultOgrenciDers.username;
+                                                        pass = resultOgrenciDers.password;
+                                                        if (user != null && pass != null) {
+                                                            const form = document.createElement('form');
+                                                            form.method = 'post';
+                                                            //form.target = '_blank';
+                                                            form.action = 'https://ekampus.ankara.edu.tr/login/index.php';
+
+                                                            const hiddenField1 = document.createElement('input');
+                                                            hiddenField1.type = 'text';
+                                                            hiddenField1.name = 'username';
+                                                            hiddenField1.value = user;
+
+                                                            const hiddenField2 = document.createElement('input');
+                                                            hiddenField2.type = 'password';
+                                                            hiddenField2.name = 'password';
+                                                            hiddenField2.value = pass;
+
+                                                            form.appendChild(hiddenField1);
+                                                            form.appendChild(hiddenField2);
+
+                                                            document.body.appendChild(form);
+                                                            form.submit();
+                                                        }
+                                                    },
+                                                    error: function (xhr, status, error) {
+                                                        HideLoader();
+                                                        Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                                                    }
+                                                });
+                                            },
+                                            Kapat: function () {
+                                                $(this).dialog("close");
+                                            }
+                                        }
+
+                                    });
+
+                                    $dialog_vieweKampusOgrenci.dialog("open");
+                                    $dialog_vieweKampusOgrenci.html(resultOgrenci.data);
+                                }
+                                else {
+                                    debugger;
+                                    HideLoader();
+                                    Dialog(resultOgrenci.data);
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                HideLoader();
+                                Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                            }
+                        });
+                    }
+                    else if (ogrenciMi == false & egitmenMi == true) {
+                        $.ajax({
+
+                            url: 'https://obs.ankara.edu.tr/student/EgitmeninOrgunEgitimdeDersiVarMi',
+                            dataType: "json",
+                            cache: false,
+                            type: 'GET',
+                            success: function (ekampusteEgitmeninDersiVarMi) {
+                                if (ekampusteEgitmeninDersiVarMi == true) {
+                                    debugger;
+                                    debugger;
+                                    $.ajax({
+
+                                        url: 'https://obs.ankara.edu.tr/student/MoodleGirisEgitmen',
+                                        dataType: "json",
+                                        cache: false,
+                                        type: 'GET',
+                                        success: function (resultEgitmen) {
+                                            debugger;
+                                            $dialog_viewEkampusEgitmen = $(".strategia-dialog").dialog({
+                                                title: "e-Kampüs OYS'ye Giriş",
+                                                width: 600,
+                                                height: 500,
+                                                close: function (event, ui) {
+                                                    $(this).empty().dialog('destroy');
+                                                    $('.formError').remove();
+                                                },
+                                                modal: true,
+                                                bgiframe: true,
+                                                autoOpen: false,
+                                                resizable: true,
+                                                buttons: {
+                                                    "e-Kampus OYS Eğitmen Giriş": function () {
+                                                        var user, pass;
+                                                        user = resultEgitmen.username;
+                                                        pass = resultEgitmen.password;
+                                                        if (user != null && pass != null) {
+                                                            const form = document.createElement('form');
+                                                            form.method = 'post';
+                                                            //form.target = '_blank';
+                                                            form.action = 'https://ekampus.ankara.edu.tr/login/index.php';
+
+                                                            const hiddenField1 = document.createElement('input');
+                                                            hiddenField1.type = 'text';
+                                                            hiddenField1.name = 'username';
+                                                            hiddenField1.value = user;
+
+                                                            const hiddenField2 = document.createElement('input');
+                                                            hiddenField2.type = 'password';
+                                                            hiddenField2.name = 'password';
+                                                            hiddenField2.value = pass;
+
+                                                            form.appendChild(hiddenField1);
+                                                            form.appendChild(hiddenField2);
+
+                                                            document.body.appendChild(form);
+                                                            form.submit();
+                                                        }
+                                                    },
+                                                    Kapat: function () {
+                                                        $(this).dialog("close");
+                                                    }
+                                                }
+
+                                            });
+
+                                            $dialog_viewEkampusEgitmen.dialog("open");
+                                            $dialog_viewEkampusEgitmen.html("e-Kampus OYS sistemi, UZAKTAN ÖĞRETİM, AÇIKÖĞRETİM, Tezsiz Yüksek Lisans (Uzaktan Eğitim) dışında kalan programlarda kullanılmaktadır. Üzerinize tanımlı olan dersler belirli aralıklarda OYS sisteminde güncellenmektedir.");
+
+
+                                        },
+                                        error: function (xhr, status, error) {
+                                            HideLoader();
+                                            Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                                        }
+                                    });
+
+                                }
+                                else {
+                                    debugger;
+                                    HideLoader();
+                                    Dialog("e-Kampus OYS sistemi, UZAKTAN ÖĞRETİM, AÇIKÖĞRETİM, Tezsiz Yüksek Lisans (Uzaktan Eğitim) dışında kalan programlarda kullanılmaktadır.<br/> <b> E-Kampüs sisteminde öğrenciler tarafından seçilip, danışmanı tarafından onaylanan dersiniz bulunmamaktadır. Bu nedenle E-Kampüs sistemine giriş yapamassınız.</b>");
+
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                HideLoader();
+                                Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                            }
+                        });
+
+
+
+
+
+
+                       
+                    }
+                },
+                error: function (xhr, status, error) {
+                    HideLoader();
+                    Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                }
+            });
+
+            debugger;
+
+
+
+
+            debugger;
+
+            //$.ajax({
+            //    url: '/student/OYSDersGetir',
+            //    dataType: "json",
+            //    cache: false,
+            //    type: 'GET',
+            //    success: function (result) {
+            //        if (result.Sonuc == true) {
+            //            debugger;
+            //            $dialog_viewEkampus = $(".strategia-dialog").dialog({
+            //                title: "e-Kampus'e Giriş",
+            //                width: 600,
+            //                height: 500,
+            //                close: function (event, ui) {
+            //                    $(this).empty().dialog('destroy');
+            //                    $('.formError').remove();
+            //                },
+            //                modal: true,
+            //                bgiframe: true,
+            //                autoOpen: false,
+            //                resizable: true,
+            //                buttons: {
+            //                    "e-Kampus Öğrenci Giriş": function () {
+            //                        ShowLoader();
+            //                        var form = $('form', this);
+            //                        var user, pass;
+            //                        $.ajax({
+            //                            url: '/student/MoodleGirisOgrenci',
+            //                            dataType: "json",
+            //                            cache: false,
+            //                            type: 'GET',
+            //                            success: function (result) {
+            //                                user = result.username;
+            //                                pass = result.password;
+            //                                if (user != null && pass != null) {
+            //                                    const form = document.createElement('form');
+            //                                    form.method = 'post';
+            //                                    //form.target = '_blank';
+            //                                    form.action = 'https://ekampus.ankara.edu.tr/login/index.php';
+
+            //                                    const hiddenField1 = document.createElement('input');
+            //                                    hiddenField1.type = 'text';
+            //                                    hiddenField1.name = 'username';
+            //                                    hiddenField1.value = user;
+
+            //                                    const hiddenField2 = document.createElement('input');
+            //                                    hiddenField2.type = 'password';
+            //                                    hiddenField2.name = 'password';
+            //                                    hiddenField2.value = pass;
+
+            //                                    form.appendChild(hiddenField1);
+            //                                    form.appendChild(hiddenField2);
+
+            //                                    document.body.appendChild(form);
+            //                                    form.submit();
+            //                                }
+            //                            },
+            //                            error: function (xhr, status, error) {
+            //                                HideLoader();
+            //                                Dialog(xhr.status + ' (' + xhr.statusText + ')');
+            //                            }
+            //                        });
+            //                    },
+            //                    "e-Kampus Eğitmen Giriş": function () {
+            //                        ShowLoader();
+            //                        var form = $('form', this);
+            //                        var user, pass;
+            //                        $.ajax({
+            //                            url: '/student/MoodleGirisEgitmen',
+            //                            dataType: "json",
+            //                            cache: false,
+            //                            type: 'GET',
+            //                            success: function (result) {
+            //                                user = result.username;
+            //                                pass = result.password;
+            //                                if (user != null && pass != null) {
+            //                                    const form = document.createElement('form');
+            //                                    form.method = 'post';
+            //                                    //form.target = '_blank';
+            //                                    form.action = 'https://ekampus.ankara.edu.tr/login/index.php';
+
+            //                                    const hiddenField1 = document.createElement('input');
+            //                                    hiddenField1.type = 'text';
+            //                                    hiddenField1.name = 'username';
+            //                                    hiddenField1.value = user;
+
+            //                                    const hiddenField2 = document.createElement('input');
+            //                                    hiddenField2.type = 'password';
+            //                                    hiddenField2.name = 'password';
+            //                                    hiddenField2.value = pass;
+
+            //                                    form.appendChild(hiddenField1);
+            //                                    form.appendChild(hiddenField2);
+
+            //                                    document.body.appendChild(form);
+            //                                    form.submit();
+            //                                }
+            //                            },
+            //                            error: function (xhr, status, error) {
+            //                                HideLoader();
+            //                                Dialog(xhr.status + ' (' + xhr.statusText + ')');
+            //                            }
+            //                        });
+            //                    },
+            //                    Kapat: function () {
+            //                        $(this).dialog("close");
+            //                    }
+            //                }
+
+            //            });
+
+            //            $dialog_viewEkampus.dialog("open");
+            //            $dialog_viewEkampus.html(result.data);
+            //        }
+            //        else {
+            //            debugger;
+            //            HideLoader();
+            //            Dialog(result.data);
+            //        }
+            //    },
+            //    error: function (xhr, status, error) {
+            //        HideLoader();
+            //        Dialog(xhr.status + ' (' + xhr.statusText + ')');
+            //    }
+            //});   
+        }
+
+
+         
+        function ankuzefOYSGiris() {
+
+            var ogrenciMi = false; 
+
+            var egitmenMi = false;
+            $.ajax({
+                url: '/student/MoodleGirisYetkiKontrol',
+                dataType: "json",
+                cache: false,
+                type: 'GET',
+                success: function (result) {
+                    debugger;
+                    for (var i = 0; i < result.length; i++) {
+                        if (result[i].yetki == "ogrenci") {
+                            ogrenciMi = true;
+                        }
+                        else if (result[i].yetki == "egitmen") {
+                            egitmenMi = true;
+                        }
+                    }
+
+                    debugger;
+
+                    if (ogrenciMi == true & egitmenMi == true) {
+
+                        debugger;
+                        $dialog_viewAnkuzefEgitmenOgrenci = $(".strategia-dialog").dialog({
+                            title: "ANKUZEF OYS'ye Giriş",
+                            width: 600,
+                            height: 500,
+                            close: function (event, ui) {
+                                $(this).empty().dialog('destroy');
+                                $('.formError').remove();
+                            },
+                            modal: true,
+                            bgiframe: true,
+                            autoOpen: false,
+                            resizable: true,
+                            buttons: {
+                                "ANKUZEF OYS Eğitmen Giriş": function () {
+
+                                    $.ajax({
+
+                                        url: 'https://obs.ankara.edu.tr/student/MoodleGirisEgitmen',
+                                        dataType: "json",
+                                        cache: false,
+                                        type: 'GET',
+                                        success: function (resultEgitmen) {
+                                            var user, pass;
+                                            user = resultEgitmen.username;
+                                            pass = resultEgitmen.password;
+                                            if (user != null && pass != null) {
+                                                const form = document.createElement('form');
+                                                form.method = 'post';
+                                                //form.target = '_blank';
+                                                form.action = 'https://oys.ankara.edu.tr/login/index.php';
+
+                                                const hiddenField1 = document.createElement('input');
+                                                hiddenField1.type = 'text';
+                                                hiddenField1.name = 'username';
+                                                hiddenField1.value = user;
+
+                                                const hiddenField2 = document.createElement('input');
+                                                hiddenField2.type = 'password';
+                                                hiddenField2.name = 'password';
+                                                hiddenField2.value = pass;
+
+                                                form.appendChild(hiddenField1);
+                                                form.appendChild(hiddenField2);
+
+                                                document.body.appendChild(form);
+                                                form.submit();
+                                            }
+                                        },
+                                        error: function (xhr, status, error) {
+                                            HideLoader();
+                                            Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                                        }
+                                    });
+
+                                },
+                                "ANKUZEF OYS Öğrenci Giriş": function () {
+
+                                    $.ajax({
+
+                                        url: '/student/MoodleGirisOgrenci',
+                                        dataType: "json",
+                                        cache: false,
+                                        type: 'GET',
+                                        success: function (resultOgrenci) {
+                                            var user, pass;
+                                            user = resultOgrenci.username;
+                                            pass = resultOgrenci.password;
+                                            if (user != null && pass != null) {
+                                                const form = document.createElement('form');
+                                                form.method = 'post';
+                                                //form.target = '_blank';
+                                                form.action = 'https://oys.ankara.edu.tr/login/index.php';
+
+                                                const hiddenField1 = document.createElement('input');
+                                                hiddenField1.type = 'text';
+                                                hiddenField1.name = 'username';
+                                                hiddenField1.value = user;
+
+                                                const hiddenField2 = document.createElement('input');
+                                                hiddenField2.type = 'password';
+                                                hiddenField2.name = 'password';
+                                                hiddenField2.value = pass;
+
+                                                form.appendChild(hiddenField1);
+                                                form.appendChild(hiddenField2);
+
+                                                document.body.appendChild(form);
+                                                form.submit();
+                                            }
+                                        },
+                                        error: function (xhr, status, error) {
+                                            HideLoader();
+                                            Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                                        }
+                                    });
+
+                                },
+                                Kapat: function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+
+                        });
+
+                        $dialog_viewAnkuzefEgitmenOgrenci.dialog("open");
+                        $dialog_viewAnkuzefEgitmenOgrenci.html("Hem öğrenci, hemde eğitmen bilginiz bulunmaktadır. Aşağıdan istediğiniz rolde ANKUZEF OYS sistemine giriş yapabilirsiniz.");
+
+
+                    }
+                    else if (ogrenciMi == true & egitmenMi == false) {
+                        $.ajax({
+                            url: '/student/AnkuzefDersGetir',
+                            dataType: "json",
+                            cache: false,
+                            type: 'GET',
+                            success: function (resultOgrenci) {
+                                if (resultOgrenci.Sonuc == true) {
+                                    debugger;
+                                    $dialog_viewAnkuzefOgrenci = $(".strategia-dialog").dialog({
+                                        title: "ANKUZEF OYS'ye Giriş",
+                                        width: 600,
+                                        height: 500,
+                                        close: function (event, ui) {
+                                            $(this).empty().dialog('destroy');
+                                            $('.formError').remove();
+                                        },
+                                        modal: true,
+                                        bgiframe: true,
+                                        autoOpen: false,
+                                        resizable: true,
+                                        buttons: {
+                                            "ANKUZEF OYS Öğrenci Giriş": function () {
+                                                ShowLoader();
+                                                var form = $('form', this);
+                                                var user, pass;
+                                                $.ajax({
+                                                    url: '/student/MoodleGirisOgrenci',
+                                                    dataType: "json",
+                                                    cache: false,
+                                                    type: 'GET',
+                                                    success: function (resultOgrenciDers) {
+                                                        user = resultOgrenciDers.username;
+                                                        pass = resultOgrenciDers.password;
+                                                        if (user != null && pass != null) {
+                                                            const form = document.createElement('form');
+                                                            form.method = 'post';
+                                                            //form.target = '_blank';
+                                                            form.action = 'https://oys.ankara.edu.tr/login/index.php';
+
+                                                            const hiddenField1 = document.createElement('input');
+                                                            hiddenField1.type = 'text';
+                                                            hiddenField1.name = 'username';
+                                                            hiddenField1.value = user;
+
+                                                            const hiddenField2 = document.createElement('input');
+                                                            hiddenField2.type = 'password';
+                                                            hiddenField2.name = 'password';
+                                                            hiddenField2.value = pass;
+
+                                                            form.appendChild(hiddenField1);
+                                                            form.appendChild(hiddenField2);
+
+                                                            document.body.appendChild(form);
+                                                            form.submit();
+                                                        }
+                                                    },
+                                                    error: function (xhr, status, error) {
+                                                        HideLoader();
+                                                        Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                                                    }
+                                                });
+                                            },
+                                            Kapat: function () {
+                                                $(this).dialog("close");
+                                            }
+                                        }
+
+                                    });
+
+                                    $dialog_viewAnkuzefOgrenci.dialog("open");
+                                    $dialog_viewAnkuzefOgrenci.html(resultOgrenci.data);
+                                }
+                                else {
+                                    debugger;
+                                    HideLoader();
+                                    Dialog(resultOgrenci.data);
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                HideLoader();
+                                Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                            }
+                        });
+                    }
+                    else if (ogrenciMi == false & egitmenMi == true) {
+
+                        $.ajax({
+
+                            url: '/student/EgitmeninUzaktanEgitimdeDersiVarMi',
+                            dataType: "json",
+                            cache: false,
+                            type: 'GET',
+                            success: function (ankuzefEgitmeninDersiVarMi) {
+                                if (ankuzefEgitmeninDersiVarMi == true) {
+                                    debugger;
+                                    debugger;
+                                    $.ajax({
+
+                                        url: 'https://obs.ankara.edu.tr/student/MoodleGirisEgitmen',
+                                        dataType: "json",
+                                        cache: false,
+                                        type: 'GET',
+                                        success: function (resultEgitmen) {
+                                            debugger;
+                                            $dialog_viewAnkuzefEgitmen = $(".strategia-dialog").dialog({
+                                                title: "ANKUZEF OYS'ye Giriş",
+                                                width: 600,
+                                                height: 500,
+                                                close: function (event, ui) {
+                                                    $(this).empty().dialog('destroy');
+                                                    $('.formError').remove();
+                                                },
+                                                modal: true,
+                                                bgiframe: true,
+                                                autoOpen: false,
+                                                resizable: true,
+                                                buttons: {
+                                                    "ANKUZEF OYS Eğitmen Giriş": function () {
+                                                        var user, pass;
+                                                        user = resultEgitmen.username;
+                                                        pass = resultEgitmen.password;
+                                                        if (user != null && pass != null) {
+                                                            const form = document.createElement('form');
+                                                            form.method = 'post';
+                                                            //form.target = '_blank';
+                                                            form.action = 'https://oys.ankara.edu.tr/login/index.php';
+
+                                                            const hiddenField1 = document.createElement('input');
+                                                            hiddenField1.type = 'text';
+                                                            hiddenField1.name = 'username';
+                                                            hiddenField1.value = user;
+
+                                                            const hiddenField2 = document.createElement('input');
+                                                            hiddenField2.type = 'password';
+                                                            hiddenField2.name = 'password';
+                                                            hiddenField2.value = pass;
+
+                                                            form.appendChild(hiddenField1);
+                                                            form.appendChild(hiddenField2);
+
+                                                            document.body.appendChild(form);
+                                                            form.submit();
+                                                        }
+                                                    },
+                                                    Kapat: function () {
+                                                        $(this).dialog("close");
+                                                    }
+                                                }
+
+                                            });
+
+                                            $dialog_viewAnkuzefEgitmen.dialog("open");
+                                            $dialog_viewAnkuzefEgitmen.html("ANKUZEF OYS sistemi, UZAKTAN ÖĞRETİM, AÇIKÖĞRETİM, Tezsiz Yüksek Lisans (Uzaktan Eğitim) programlarda kullanılmaktadır. Üzerinize tanımlı olan dersler belirli aralıklarda OYS sisteminde güncellenmektedir.");
+
+
+                                        },
+                                        error: function (xhr, status, error) {
+                                            HideLoader();
+                                            Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                                        }
+                                    });
+
+                                }
+                                else {
+                                    debugger;
+                                    HideLoader();
+                                    Dialog("ANKUZEF OYS sistemi, UZAKTAN ÖĞRETİM, AÇIKÖĞRETİM, Tezsiz Yüksek Lisans (Uzaktan Eğitim) programlarında kullanılmaktadır.<br/> <b> ANKUZEF OYS sisteminde öğrenciler tarafından seçilip, danışmanı tarafından onaylanan dersiniz bulunmamaktadır. Bu nedenle ANKUZEF OYS sistemine giriş yapamassınız.</b>");
+
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                HideLoader();
+                                Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                            }
+                        });
+
+                       
+                    }
+                },
+                error: function (xhr, status, error) {
+                    HideLoader();
+                    Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                }
+            });
+
+
+
+
+            //debugger;
+
+            //$.ajax({
+            //    url: '/student/AnkuzefDersGetir',
+            //    dataType: "json",
+            //    cache: false,
+            //    type: 'GET',
+            //    success: function (result) {
+            //        if (result.Sonuc == true) {
+            //            debugger;
+            //           $dialog_viewAnkuzef = $(".strategia-dialog").dialog({
+            //               title: "ANKUZEF OYS'ye Giriş",
+            //               width: 600,
+            //               height: 500,
+            //               close: function (event, ui) {
+            //                   $(this).empty().dialog('destroy');
+            //                   $('.formError').remove();
+            //               },
+            //               modal: true,
+            //               bgiframe: true,
+            //               autoOpen: false,
+            //               resizable: true,
+            //               buttons: {
+            //                   "ANKUZEF OYS Öğrenci Giriş": function () {
+            //                       ShowLoader();
+            //                       var form = $('form', this);
+            //                       var user, pass;
+            //                       $.ajax({
+            //                           url: '/student/MoodleGirisOgrenci',
+            //                           dataType: "json",
+            //                           cache: false,
+            //                           type: 'GET',
+            //                           success: function (result) {
+            //                               user = result.username;
+            //                               pass = result.password;
+            //                               if (user != null && pass != null) {
+            //                                   const form = document.createElement('form');
+            //                                   form.method = 'post';
+            //                                   //form.target = '_blank';
+            //                                   form.action = 'https://oys.ankara.edu.tr/login/index.php';
+
+            //                                   const hiddenField1 = document.createElement('input');
+            //                                   hiddenField1.type = 'text';
+            //                                   hiddenField1.name = 'username';
+            //                                   hiddenField1.value = user;
+
+            //                                   const hiddenField2 = document.createElement('input');
+            //                                   hiddenField2.type = 'password';
+            //                                   hiddenField2.name = 'password';
+            //                                   hiddenField2.value = pass;
+
+            //                                   form.appendChild(hiddenField1);
+            //                                   form.appendChild(hiddenField2);
+
+            //                                   document.body.appendChild(form);
+            //                                   form.submit();
+            //                               }
+            //                           },
+            //                           error: function (xhr, status, error) {
+            //                               HideLoader();
+            //                               Dialog(xhr.status + ' (' + xhr.statusText + ')');
+            //                           }
+            //                       });
+            //                   },
+            //                   "ANKUZEF OYS Eğitmen Giriş": function () {
+            //                       ShowLoader();
+            //                       var form = $('form', this);
+            //                       var user, pass;
+            //                       $.ajax({
+            //                           url: '/student/MoodleGirisEgitmen',
+            //                           dataType: "json",
+            //                           cache: false,
+            //                           type: 'GET',
+            //                           success: function (result) {
+            //                               user = result.username;
+            //                               pass = result.password;
+            //                               if (user != null && pass != null) {
+            //                                   const form = document.createElement('form');
+            //                                   form.method = 'post';
+            //                                   //form.target = '_blank';
+            //                                   form.action = 'https://oys.ankara.edu.tr/login/index.php';
+
+            //                                   const hiddenField1 = document.createElement('input');
+            //                                   hiddenField1.type = 'text';
+            //                                   hiddenField1.name = 'username';
+            //                                   hiddenField1.value = user;
+
+            //                                   const hiddenField2 = document.createElement('input');
+            //                                   hiddenField2.type = 'password';
+            //                                   hiddenField2.name = 'password';
+            //                                   hiddenField2.value = pass;
+
+            //                                   form.appendChild(hiddenField1);
+            //                                   form.appendChild(hiddenField2);
+
+            //                                   document.body.appendChild(form);
+            //                                   form.submit();
+            //                               }
+            //                           },
+            //                           error: function (xhr, status, error) {
+            //                               HideLoader();
+            //                               Dialog(xhr.status + ' (' + xhr.statusText + ')');
+            //                           }
+            //                       });
+            //                   },
+            //                   Kapat: function () {
+            //                       $(this).dialog("close");
+            //                   }
+            //               }
+
+            //           });
+
+            //           $dialog_viewAnkuzef.dialog("open");
+            //           $dialog_viewAnkuzef.html(result.data);
+            //       } 
+            //       else
+            //        {
+            //            debugger;
+            //           HideLoader();
+            //           Dialog(result.data);
+            //       }    
+            //    },
+            //    error: function (xhr, status, error) {
+            //        HideLoader();
+            //        Dialog(xhr.status + ' (' + xhr.statusText + ')');
+            //    }
+            //});
+
+        }
+    </script>
+
+
+    <style>
+        .btn-harc {
+            border-radius: 0px !important;
+            padding: 4px 15px !important;
+            margin-top: 3px !important;
+            margin-left: 13px !important;
+        }
+
+        .swal2-title {
+            font-size: 1.3em;
+        }
+    </style>
+
+    <div class="DialogKimlikKarti"></div>
+    <div class="DialogKimlikKartiUpdate"></div>
+
+    
+
+
+<!-- Top line begins -->
+<div id="top">
+    <div class="wrapper">
+        <div style="width: 72px; float: left; margin-left: -18px; margin-top: 4px;">
+            <a href="/" title="" class="logo">
+                <img style="max-width:72px;max-height:72px;" src="https://obs.ankara.edu.tr/files/university/images/logo.png" alt="">
+            </a>
+        </div>
+        <span class="logo-university-text">ANKARA ÜNİVERSİTESİ</span>
+        <span class="logo-cims-text">KAMPÜS BİLGİ YÖNETİM SİSTEMİ</span>
+
+        <!-- Right top nav -->
+        <div class="topNav">
+            <ul class="userNav">
+                <li><a title="Ara..." class="search"></a></li>
+                <li><a href="/home/help" class="help help-popup" title="Yardım"></a></li>
+                <li><a href="/account/logout" title="Oturumu Kapat" class="logout"></a></li>
+                
+            </ul>
+            
+            <div class="topSearch">
+                <div class="topDropArrow"></div>
+
+                <input type="text" placeholder="Ara..." name="term" class="searchbox-autocomplete ui-autocomplete-input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
+                <input type="submit" value="">
+
+            </div>
+        </div>
+
+        <!-- Responsive nav -->
+        <ul class="altMenu">
+            <li><a href="index.html" title="">Dashboard</a></li>
+            <li>
+                <a href="ui.html" title="" class="exp subOpened" id="current">UI elements</a>
+                <ul>
+                    <li><a href="ui.html">General elements</a></li>
+                    <li><a href="ui_icons.html">Icons</a></li>
+                    <li><a href="ui_buttons.html">Button sets</a></li>
+                    <li><a href="ui_grid.html" class="active">Grid</a></li>
+                    <li><a href="ui_custom.html">Custom elements</a></li>
+                    <li><a href="ui_experimental.html">Experimental</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="forms.html" title="" class="exp subClosed">Forms stuff</a>
+                <ul style="display: none;">
+                    <li><a href="forms.html">Inputs &amp; elements</a></li>
+                    <li><a href="form_validation.html">Validation</a></li>
+                    <li><a href="form_editor.html">File uploads &amp; editor</a></li>
+                    <li><a href="form_wizards.html">Form wizards</a></li>
+                </ul>
+            </li>
+            <li><a href="messages.html" title="">Messages</a></li>
+            <li><a href="statistics.html" title="">Statistics</a></li>
+            <li>
+                <a href="tables.html" title="" class="exp subClosed">Tables</a>
+                <ul style="display: none;">
+                    <li><a href="tables.html">Standard tables</a></li>
+                    <li><a href="tables_dynamic.html">Dynamic tables</a></li>
+                    <li><a href="tables_control.html">Tables with control</a></li>
+                    <li><a href="tables_sortable.html">Sortable &amp; resizable</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="other_calendar.html" title="" class="exp subClosed">Other pages</a>
+                <ul style="display: none;">
+                    <li><a href="other_calendar.html">Calendar</a></li>
+                    <li><a href="other_gallery.html">Images gallery</a></li>
+                    <li><a href="other_file_manager.html">File manager</a></li>
+                    <li><a href="other_404.html">Sample error page</a></li>
+                    <li><a href="other_typography.html">Typography</a></li>
+                </ul>
+            </li>
+        </ul>
+        <div class="clear"></div>
+    </div>
+</div>
+<!-- Top line ends -->
+
+
+    <div id="sidebar" class="without">
+        
+
+<div class="mainNav">
+    
+    <div class="user">
+        <a title="" class="leftUserDrop">
+            <img src="/files/user/images/10117201474.jpg?q=7a5ac68f-9005-49c6-ae24-0dcef3e055b8" class="box-shadow" width="72" height="72">
+            <span><strong>0</strong></span>
+        </a>
+        <span>Abdullah Faruk
+            <br>
+            SAYIN</span>
+        <ul class="leftUser" style="display: none;">
+            <li><a href="/account/edit" title="" class="sProfile">Profilim</a></li>
+            <li></li>
+            <li><a href="/account/logout" title="" class="sLogout">Oturumu Kapat</a></li>
+        </ul>
+        <div class="clear"></div>
+    </div>
+
+    <!-- Responsive nav -->
+    <div class="altNav">
+        <div class="userSearch">
+            <form action="" novalidate="novalidate">
+                <input type="text" placeholder="Ara..." name="userSearch">
+                <input type="submit" value="">
+            </form>
+        </div>
+
+        <!-- User nav -->
+        <ul class="userNav">
+            <li><a href="#" title="" class="profile"></a></li>
+            <li><a href="/mesaj-kutusu" title="" class="messages"></a></li>
+            <li><a href="/ayarlar" title="" class="settings"></a></li>
+            <li><a href="/account/logout" title="" class="logout"></a></li>
+        </ul>
+    </div>
+
+    <!-- Main nav -->
+
+    <ul class="nav">
+        
+
+            <li>
+                <a href="/">
+                    <img src="/content/themes/aquincum/images/icons/mainnav/dashboard.png"><span>Kontrol Paneli</span>
+                </a>
+                
+            </li>
+            <li>
+                <a href="/security/user/sitemap">
+                    <img src="/content/themes/aquincum/images/icons/mainnav/other.png"><span>Site Haritası</span>
+                </a>
+                
+            </li>
+    </ul>
+</div>
+
+
+    </div>
+
+    <div id="content" style="margin-left: 100px; min-height: 641px;">
+        <div class="menuH-wrapper">
+            
+
+<ul class="menuH">
+            <li>
+                <a class="arrow" href="#">Öğrenci</a>
+                        <ul>
+                <li>
+                    <a class="arrow" href="#">İşlemler</a>
+                            <ul>
+                <li>
+                    <a class="" href="/student/academiccalendar">Akademik Takvim</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="/student/advisor">Danışman Bilgileri</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="/transcript/virtual">Sanal Transkript</a>
+                    
+                </li>
+        </ul>
+
+                </li>
+                <li>
+                    <a class="arrow" href="#">Raporlar</a>
+                            <ul>
+                <li>
+                    <a class="" href="/student/lessonplan">Ders Planı</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="/student/lessonprogram">Ders Programı</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="javascript:ViewOwnTranscript(0)">Transkript</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="/student/lessongradebystudent">Sınav Sonuçları</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="/student/studentattendancereport">Ders Bazlı Devam Raporu</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="javascript:ReRegistrationConfirmationReportByStudent(0)">Kayıt Onay Raporu</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="javascript:ViewStudentKarneRaporu(0)">Karne Raporu</a>
+                    
+                </li>
+        </ul>
+
+                </li>
+                <li>
+                    <a class="" href="/student/AzamiSureBilgisi">Azami Sınav Durumu</a>
+                    
+                </li>
+        </ul>
+
+            </li>
+            <li>
+                <a class="arrow" href="#">Öğrenci BYS</a>
+                        <ul>
+                <li>
+                    <a class="" href="/student/ciftanadalyandalonay">Çift Anadal / Yandal Yerleştirme Onay</a>
+                    
+                </li>
+                <li>
+                    <a class="arrow" href="#">Ders İşlemleri</a>
+                            <ul>
+                <li>
+                    <a class="arrow" href="#">Ders Seçme İşlemleri</a>
+                            <ul>
+                <li>
+                    <a class="" href="/reregistration/syllabusselection">Ders Seçme İşlemi</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="#">Ders Seçme Raporları</a>
+                    
+                </li>
+        </ul>
+
+                </li>
+        </ul>
+
+                </li>
+        </ul>
+
+            </li>
+            <li>
+                <a class="" href="javascript:window.open('https://kampuskart.ankara.edu.tr/home/ObsLogin','_blank')">Kampus Kart Seç</a>
+                
+            </li>
+            <li>
+                <a class="arrow" href="#">Kütüphane İşlemleri</a>
+                        <ul>
+                <li>
+                    <a class="" href="javascript: kutuphaneKayit('1')">Kütüphane Kayıt</a>
+                    
+                </li>
+                <li>
+                    <a class="" href="javascript: GetOgrenciKutuphaneDurum()">Kütüphane Durum</a>
+                    
+                </li>
+        </ul>
+
+            </li>
+            <li>
+                <a class="" href="/Account/PersonalDataProtectionLaw">Aydınlatma Metni</a>
+                
+            </li>
+            <li>
+                <a class="" href="javascript: ecampusGiris()">e-Kampüs'e Giriş</a>
+                
+            </li>
+            <li>
+                <a class="" href="javascript: ankuzefOYSGiris()">ANKUZEF OYS'ye Giriş</a>
+                
+            </li>
+
+        <li class="student-department">
+            <a class="arrow">Aktif Bölüm : İlahiyat (N.Ö.)</a>
+            <ul class="active-dept">
+                    <li class="selected-dept">
+                        <a data-href="/student/changedepartment" data-srn="554884">
+                            <div class="fluid">
+                                <div class="grid4">Bölüm</div>
+                                <div class="grid8" style="overflow:hidden;text-overflow:ellipsis;">: İlahiyat (N.Ö.)</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="fluid">
+                                <div class="grid4">Kayıt Tipi</div>
+                                <div class="grid8">: ÖSYS</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="fluid">
+                                <div class="grid4">Kayıt Tarihi</div>
+                                <div class="grid8">: 28.08.2023</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="fluid">
+                                <div class="grid4">Durum</div>
+                                <div class="grid8">: Aktif</div>
+                                <div class="clear"></div>
+                            </div>
+                        </a>
+                        <div style="min-height:10px;"></div>
+                    </li>
+            </ul>
+        </li>
+    <li style="z-index:-999999999; position: relative;">
+        <a href="/HelpDesk" style="background-color: rgb(110, 151, 170); color: whitesmoke; font-weight: bold;">Yardım Masası</a>
+    </li>
+</ul>
+
+
+            <div class="clear"></div>
+        </div>
+        <div class="contentTop">
+            <span class="pageTitle"><span class="icon-bars"></span>Öğrenci Sınav Sonuçları Detay</span>
+            <ul class="quickStats">
+
+                <li>
+
+
+                    <strong class="blue Agency_FB">2023  - 2024</strong>
+                    <span>Güz Dönemi</span>
+                </li>
+                <li id="borcLi" style="display:none;">
+                    <strong class="blue Agency_FB">Harç Borcunuz</strong>
+                    <span><b id="borcMiktar">0 TL</b></span>
+                </li>
+                <li>
+                    <a class="blueImg tipS" title="Sadece aktif olanlar">
+                        <img src="/content/themes/aquincum/images/icons/light/icon-user.png" alt="">
+                    </a>
+                    <div class="floatR"><strong class="blue Agency_FB">8876</strong><span>Akademik Personel</span></div>
+                </li>
+                <li>
+                    <a class="redImg tipS" title="Sadece aktif olanlar">
+                        <img src="/content/themes/aquincum/images/icons/light/icon-admin2.png" alt="">
+                    </a>
+                    <div class="floatR"><strong class="blue Agency_FB">570</strong><span>İdari Personel</span></div>
+                </li>
+                <li>
+                    <a class="greenImg tipS" title="Sadece aktif olanlar">
+                        <img src="/content/themes/aquincum/images/icons/light/icon-users2.png" alt="">
+                    </a>
+                    <div class="floatR"><strong class="blue Agency_FB">90694</strong><span>Öğrenci</span></div>
+                </li>
+            </ul>
+            <div class="clear"></div>
+            <div id="system-graph">
+                <div class="topDropArrow"></div>
+                <div id="system-graph-close">X</div>
+                <div class="flot-memo"></div>
+                <div class="legendPlaceholder"></div>
+                <div class="flotcontainer"></div>
+            </div>
+        </div>
+
+        <div class="breadLine">
+            <div class="breadLinks">
+                <ul>
+                    <li><a href="#" title=""><i class="icos-stoptimer"></i><span>Kalan Süre:</span> <strong id="countdown">118:29</strong></a></li>
+
+                    <li class="has">
+                        <a title="">
+                            <i class="icos-list"></i>
+                            <span>Sık Kullanılanlar</span>
+                            <span>
+                                <img src="/content/themes/aquincum/images/elements/control/hasddArrow.png" alt="">
+                            </span>
+                        </a>
+                        <ul id="favorites-menu" class="ui-sortable" style="">
+                            <li class="disabled"><a id="add-favorites" href="javascript:void(0);" title=""><span class="icos-add"></span>Bu Sayfayı Ekle</a></li>
+<form action="/Message/SaveFavoriteOrder" data-ajax="true" id="form1" method="post" novalidate="novalidate">
+</form>                        </ul>
+                    </li>
+                        <li class="has">
+        <a title="">
+            <i class="icos-flag-tr"></i>
+            <span>Türkçe</span>
+            <span>
+                <img src="/content/themes/aquincum/images/elements/control/hasddArrow.png" alt=""></span>
+        </a>
+        <ul style="">
+            <li class="noBorderB"><a href="/ChangeLanguage/EN?returnURL=/student/lessongradebystudent" title=""><span class="icos-flag-en"></span>English</a></li>
+        </ul>
+    </li>
+
+                    
+                </ul>
+                <div class="clear"></div>
+            </div>
+        </div>
+        <div class="wrapper">
+            
+                <div class="nNote nWarning" style="display: none;"></div>
+                <div class="nNote nInformation" style="display: none;"></div>   
+                <div class="nNote nSuccess" style="display: none;"></div>  
+                <div class="nNote nFailure" style="display: none;"></div>
+            
+
+
+    <div class="widget fluid">
+<form action="/Student/LessonGradeByStudent" data-ajax="true" data-ajax-begin="OnBegin" data-ajax-complete="OnComplete" data-ajax-failure="OnFailure" data-ajax-success="CustomOnSuccess" id="form0" method="post" novalidate="novalidate">            <input type="hidden" id="StudentProgramRegistrationNo" name="StudentProgramRegistrationNo" value="554884">
+            <div class="formRow">
+                <div class="grid3">
+                    <label>Ad Soyad</label>
+                </div>
+                <div class="grid6">
+
+                    <label>
+
+                        Abdullah Faruk SAYIN
+
+
+                    </label>
+
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="formRow">
+                <div class="grid3"><label>Öğrenci Numarası</label></div>
+                <div class="grid9">
+                    <label>
+
+                        23070191
+
+
+
+
+                    </label>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="formRow">
+                <div class="grid3"><label>Bölüm</label></div>
+                <div class="grid9">
+
+İlahiyat Fakültesi İlahiyat Normal Öğretim
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="formRow">
+                <div class="grid3">
+                    <label>Dönem</label>
+                </div>
+                <div class="grid6">
+<select id="TermNo" name="TermNo"><option value="1">1950 - 1951 Güz Dönemi</option>
+<option value="2">1950 - 1951 Bahar Dönemi</option>
+<option value="3">1950 - 1951 Yaz Okulu</option>
+<option value="4">1951 - 1952 Güz Dönemi</option>
+<option value="5">1951 - 1952 Bahar Dönemi</option>
+<option value="6">1951 - 1952 Yaz Okulu</option>
+<option value="7">1952 - 1953 Güz Dönemi</option>
+<option value="8">1952 - 1953 Bahar Dönemi</option>
+<option value="9">1952 - 1953 Yaz Okulu</option>
+<option value="10">1953 - 1954 Güz Dönemi</option>
+<option value="11">1953 - 1954 Bahar Dönemi</option>
+<option value="12">1953 - 1954 Yaz Okulu</option>
+<option value="13">1954 - 1955 Güz Dönemi</option>
+<option value="14">1954 - 1955 Bahar Dönemi</option>
+<option value="15">1954 - 1955 Yaz Okulu</option>
+<option value="16">1955 - 1956 Güz Dönemi</option>
+<option value="17">1955 - 1956 Bahar Dönemi</option>
+<option value="18">1955 - 1956 Yaz Okulu</option>
+<option value="19">1956 - 1957 Güz Dönemi</option>
+<option value="20">1956 - 1957 Bahar Dönemi</option>
+<option value="21">1956 - 1957 Yaz Okulu</option>
+<option value="22">1957 - 1958 Güz Dönemi</option>
+<option value="23">1957 - 1958 Bahar Dönemi</option>
+<option value="24">1957 - 1958 Yaz Okulu</option>
+<option value="25">1958 - 1959 Güz Dönemi</option>
+<option value="26">1958 - 1959 Bahar Dönemi</option>
+<option value="27">1958 - 1959 Yaz Okulu</option>
+<option value="28">1959 - 1960 Güz Dönemi</option>
+<option value="29">1959 - 1960 Bahar Dönemi</option>
+<option value="30">1959 - 1960 Yaz Okulu</option>
+<option value="31">1960 - 1961 Güz Dönemi</option>
+<option value="32">1960 - 1961 Bahar Dönemi</option>
+<option value="33">1960 - 1961 Yaz Okulu</option>
+<option value="34">1961 - 1962 Güz Dönemi</option>
+<option value="35">1961 - 1962 Bahar Dönemi</option>
+<option value="36">1961 - 1962 Yaz Okulu</option>
+<option value="37">1962 - 1963 Güz Dönemi</option>
+<option value="38">1962 - 1963 Bahar Dönemi</option>
+<option value="39">1962 - 1963 Yaz Okulu</option>
+<option value="40">1963 - 1964 Güz Dönemi</option>
+<option value="41">1963 - 1964 Bahar Dönemi</option>
+<option value="42">1963 - 1964 Yaz Okulu</option>
+<option value="43">1964 - 1965 Güz Dönemi</option>
+<option value="44">1964 - 1965 Bahar Dönemi</option>
+<option value="45">1964 - 1965 Yaz Okulu</option>
+<option value="46">1965 - 1966 Güz Dönemi</option>
+<option value="47">1965 - 1966 Bahar Dönemi</option>
+<option value="48">1965 - 1966 Yaz Okulu</option>
+<option value="49">1966 - 1967 Güz Dönemi</option>
+<option value="50">1966 - 1967 Bahar Dönemi</option>
+<option value="51">1966 - 1967 Yaz Okulu</option>
+<option value="52">1967 - 1968 Güz Dönemi</option>
+<option value="53">1967 - 1968 Bahar Dönemi</option>
+<option value="54">1967 - 1968 Yaz Okulu</option>
+<option value="55">1968 - 1969 Güz Dönemi</option>
+<option value="56">1968 - 1969 Bahar Dönemi</option>
+<option value="57">1968 - 1969 Yaz Okulu</option>
+<option value="58">1969 - 1970 Güz Dönemi</option>
+<option value="59">1969 - 1970 Bahar Dönemi</option>
+<option value="60">1969 - 1970 Yaz Okulu</option>
+<option value="61">1970 - 1971 Güz Dönemi</option>
+<option value="62">1970 - 1971 Bahar Dönemi</option>
+<option value="63">1970 - 1971 Yaz Okulu</option>
+<option value="64">1971 - 1972 Güz Dönemi</option>
+<option value="65">1971 - 1972 Bahar Dönemi</option>
+<option value="66">1971 - 1972 Yaz Okulu</option>
+<option value="67">1972 - 1973 Güz Dönemi</option>
+<option value="68">1972 - 1973 Bahar Dönemi</option>
+<option value="69">1972 - 1973 Yaz Okulu</option>
+<option value="70">1973 - 1974 Güz Dönemi</option>
+<option value="71">1973 - 1974 Bahar Dönemi</option>
+<option value="72">1973 - 1974 Yaz Okulu</option>
+<option value="73">1974 - 1975 Güz Dönemi</option>
+<option value="74">1974 - 1975 Bahar Dönemi</option>
+<option value="75">1974 - 1975 Yaz Okulu</option>
+<option value="76">1975 - 1976 Güz Dönemi</option>
+<option value="77">1975 - 1976 Bahar Dönemi</option>
+<option value="78">1975 - 1976 Yaz Okulu</option>
+<option value="79">1976 - 1977 Güz Dönemi</option>
+<option value="80">1976 - 1977 Bahar Dönemi</option>
+<option value="81">1976 - 1977 Yaz Okulu</option>
+<option value="82">1977 - 1978 Güz Dönemi</option>
+<option value="83">1977 - 1978 Bahar Dönemi</option>
+<option value="84">1977 - 1978 Yaz Okulu</option>
+<option value="85">1978 - 1979 Güz Dönemi</option>
+<option value="86">1978 - 1979 Bahar Dönemi</option>
+<option value="87">1978 - 1979 Yaz Okulu</option>
+<option value="88">1979 - 1980 Güz Dönemi</option>
+<option value="89">1979 - 1980 Bahar Dönemi</option>
+<option value="90">1979 - 1980 Yaz Okulu</option>
+<option value="91">1980 - 1981 Güz Dönemi</option>
+<option value="92">1980 - 1981 Bahar Dönemi</option>
+<option value="93">1980 - 1981 Yaz Okulu</option>
+<option value="94">1981 - 1982 Güz Dönemi</option>
+<option value="95">1981 - 1982 Bahar Dönemi</option>
+<option value="96">1981 - 1982 Yaz Okulu</option>
+<option value="97">1982 - 1983 Güz Dönemi</option>
+<option value="98">1982 - 1983 Bahar Dönemi</option>
+<option value="99">1982 - 1983 Yaz Okulu</option>
+<option value="100">1983 - 1984 Güz Dönemi</option>
+<option value="101">1983 - 1984 Bahar Dönemi</option>
+<option value="102">1983 - 1984 Yaz Okulu</option>
+<option value="103">1984 - 1985 Güz Dönemi</option>
+<option value="104">1984 - 1985 Bahar Dönemi</option>
+<option value="105">1984 - 1985 Yaz Okulu</option>
+<option value="106">1985 - 1986 Güz Dönemi</option>
+<option value="107">1985 - 1986 Bahar Dönemi</option>
+<option value="108">1985 - 1986 Yaz Okulu</option>
+<option value="109">1986 - 1987 Güz Dönemi</option>
+<option value="110">1986 - 1987 Bahar Dönemi</option>
+<option value="111">1986 - 1987 Yaz Okulu</option>
+<option value="112">1987 - 1988 Güz Dönemi</option>
+<option value="113">1987 - 1988 Bahar Dönemi</option>
+<option value="114">1987 - 1988 Yaz Okulu</option>
+<option value="115">1988 - 1989 Güz Dönemi</option>
+<option value="116">1988 - 1989 Bahar Dönemi</option>
+<option value="117">1988 - 1989 Yaz Okulu</option>
+<option value="118">1989 - 1990 Güz Dönemi</option>
+<option value="119">1989 - 1990 Bahar Dönemi</option>
+<option value="120">1989 - 1990 Yaz Okulu</option>
+<option value="121">1990 - 1991 Güz Dönemi</option>
+<option value="122">1990 - 1991 Bahar Dönemi</option>
+<option value="123">1990 - 1991 Yaz Okulu</option>
+<option value="124">1991 - 1992 Güz Dönemi</option>
+<option value="125">1991 - 1992 Bahar Dönemi</option>
+<option value="126">1991 - 1992 Yaz Okulu</option>
+<option value="127">1992 - 1993 Güz Dönemi</option>
+<option value="128">1992 - 1993 Bahar Dönemi</option>
+<option value="129">1992 - 1993 Yaz Okulu</option>
+<option value="130">1993 - 1994 Güz Dönemi</option>
+<option value="131">1993 - 1994 Bahar Dönemi</option>
+<option value="132">1993 - 1994 Yaz Okulu</option>
+<option value="133">1994 - 1995 Güz Dönemi</option>
+<option value="134">1994 - 1995 Bahar Dönemi</option>
+<option value="135">1994 - 1995 Yaz Okulu</option>
+<option value="136">1995 - 1996 Güz Dönemi</option>
+<option value="137">1995 - 1996 Bahar Dönemi</option>
+<option value="138">1995 - 1996 Yaz Okulu</option>
+<option value="139">1996 - 1997 Güz Dönemi</option>
+<option value="140">1996 - 1997 Bahar Dönemi</option>
+<option value="141">1996 - 1997 Yaz Okulu</option>
+<option value="142">1997 - 1998 Güz Dönemi</option>
+<option value="143">1997 - 1998 Bahar Dönemi</option>
+<option value="144">1997 - 1998 Yaz Okulu</option>
+<option value="145">1998 - 1999 Güz Dönemi</option>
+<option value="146">1998 - 1999 Bahar Dönemi</option>
+<option value="147">1998 - 1999 Yaz Okulu</option>
+<option value="148">1999 - 2000 Güz Dönemi</option>
+<option value="149">1999 - 2000 Bahar Dönemi</option>
+<option value="150">1999 - 2000 Yaz Okulu</option>
+<option value="151">2000 - 2001 Güz Dönemi</option>
+<option value="152">2000 - 2001 Bahar Dönemi</option>
+<option value="153">2000 - 2001 Yaz Okulu</option>
+<option value="154">2001 - 2002 Güz Dönemi</option>
+<option value="155">2001 - 2002 Bahar Dönemi</option>
+<option value="156">2001 - 2002 Yaz Okulu</option>
+<option value="157">2002 - 2003 Güz Dönemi</option>
+<option value="158">2002 - 2003 Bahar Dönemi</option>
+<option value="159">2002 - 2003 Yaz Okulu</option>
+<option value="160">2003 - 2004 Güz Dönemi</option>
+<option value="161">2003 - 2004 Bahar Dönemi</option>
+<option value="162">2003 - 2004 Yaz Okulu</option>
+<option value="163">2004 - 2005 Güz Dönemi</option>
+<option value="164">2004 - 2005 Bahar Dönemi</option>
+<option value="165">2004 - 2005 Yaz Okulu</option>
+<option value="166">2005 - 2006 Güz Dönemi</option>
+<option value="167">2005 - 2006 Bahar Dönemi</option>
+<option value="168">2005 - 2006 Yaz Okulu</option>
+<option value="169">2006 - 2007 Güz Dönemi</option>
+<option value="170">2006 - 2007 Bahar Dönemi</option>
+<option value="171">2006 - 2007 Yaz Okulu</option>
+<option value="172">2007 - 2008 Güz Dönemi</option>
+<option value="173">2007 - 2008 Bahar Dönemi</option>
+<option value="174">2007 - 2008 Yaz Okulu</option>
+<option value="175">2008 - 2009 Güz Dönemi</option>
+<option value="176">2008 - 2009 Bahar Dönemi</option>
+<option value="177">2008 - 2009 Yaz Okulu</option>
+<option value="178">2009 - 2010 Güz Dönemi</option>
+<option value="179">2009 - 2010 Bahar Dönemi</option>
+<option value="180">2009 - 2010 Yaz Okulu</option>
+<option value="181">2010 - 2011 Güz Dönemi</option>
+<option value="182">2010 - 2011 Bahar Dönemi</option>
+<option value="183">2010 - 2011 Yaz Okulu</option>
+<option value="184">2011 - 2012 Güz Dönemi</option>
+<option value="185">2011 - 2012 Bahar Dönemi</option>
+<option value="186">2011 - 2012 Yaz Okulu</option>
+<option value="187">2012 - 2013 Güz Dönemi</option>
+<option value="188">2012 - 2013 Bahar Dönemi</option>
+<option value="189">2012 - 2013 Yaz Okulu</option>
+<option value="190">2013 - 2014 Güz Dönemi</option>
+<option value="191">2013 - 2014 Bahar Dönemi</option>
+<option value="192">2013 - 2014 Yaz Okulu</option>
+<option value="193">2014 - 2015 Güz Dönemi</option>
+<option value="194">2014 - 2015 Bahar Dönemi</option>
+<option value="195">2014 - 2015 Yaz Okulu</option>
+<option value="196">2015 - 2016 Güz Dönemi</option>
+<option value="197">2015 - 2016 Bahar Dönemi</option>
+<option value="198">2015 - 2016 Yaz Okulu</option>
+<option value="199">2016 - 2017 Güz Dönemi</option>
+<option value="200">2016 - 2017 Bahar Dönemi</option>
+<option value="201">2016 - 2017 Yaz Okulu</option>
+<option value="202">2017 - 2018 Güz Dönemi</option>
+<option value="203">2017 - 2018 Bahar Dönemi</option>
+<option value="204">2017 - 2018 Yaz Okulu</option>
+<option value="205">2018 - 2019 Güz Dönemi</option>
+<option value="206">2018 - 2019 Bahar Dönemi</option>
+<option value="207">2018 - 2019 Yaz Okulu</option>
+<option value="208">2019 - 2020 Güz Dönemi</option>
+<option value="209">2019 - 2020 Bahar Dönemi</option>
+<option value="210">2019 - 2020 Yaz Okulu</option>
+<option value="211">2020 - 2021 Güz Dönemi</option>
+<option value="212">2020 - 2021 Bahar Dönemi</option>
+<option value="213">2020 - 2021 Yaz Okulu</option>
+<option value="215">2021 - 2022 Güz Dönemi</option>
+<option value="216">2021 - 2022 Bahar Dönemi</option>
+<option value="217">2021 - 2022 Yaz Okulu</option>
+<option value="218">2022 - 2023 Güz Dönemi</option>
+<option value="219">2022 - 2023 Bahar Dönemi</option>
+<option value="220">2022 - 2023 Yaz Okulu</option>
+<option selected="selected" value="221">2023 - 2024 Güz Dönemi</option>
+<option value="222">2023 - 2024 Bahar Dönemi</option>
+<option value="223">2023 - 2024 Yaz Okulu</option>
+<option value="224">2024 - 2025 Güz Dönemi</option>
+<option value="225">2024 - 2025 Bahar Dönemi</option>
+<option value="226">2024 - 2025 Yaz Okulu</option>
+</select>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="formRow">
+                <div class="grid3 hidden-phone"></div>
+                <div class="grid9">
+                    <input type="submit" class="buttonM bBlue" value="Listele">
+                    <input class="buttonH bGreyish" id="btnToggle" type="button" value="Notların Tümünü Aç/Kapat">
+                </div>
+                <div class="clear"></div>
+            </div>
+            <table class="tDefault fullwidth" id="confirmationReport-list" data-take-input="Take">
+                <thead>
+                    <tr>
+                        <td class="">Ders</td>
+                        <td class="">Akademik Personel</td>
+                        <td class="">Harf Notu İlan Tarihi</td>
+                        <td class="">Sınıfın Ortalaması</td>
+                        <td class="">Öğrenci Ortalaması</td>
+                        <td class="">Harf Notu</td>
+                        <td class="">Durum</td>
+                        <td>Aksiyon</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+
+
+        <tr>
+                <td>HAZ001 - Arapça</td>
+                <td>Doç.Dr. Ömer ACAR </td>
+
+            <td>
+
+
+            </td>
+            <td>
+            </td>
+            <td>
+
+            </td>
+            <td class="textC">
+                            -
+            </td>
+            <td class="textC">Devamlı</td>
+            <td class="textC">
+
+
+
+
+
+
+                    <a id="studentlesson-view-618653" class="tablectrl_small bDefault tipE list-student-lesson" href="javascript:void(0)" data-term="221" data-partial="_StudentLessonList.cshtml" data-obkno="16307195" original-title="Öğrenci Dersleri" title="Dersleri Kapat"><span class="iconb" data-icon=""></span></a>
+            </td>
+
+        </tr>
+            <tr class="sub-tr" id="tr-lessons-16307195" style="background: none !important;">
+                <td class="noBorderB"></td>
+                <td colspan="7" style="padding: 0;" class="noBorderB">
+                    <table class="student-lesson-list" style="width: 100%; margin-left: 1px;">
+                        <thead>
+                            <tr style="border-top: none;">
+                                <td class="noBorderB"><label>Çalışma Türü</label></td>
+                                <td class="noBorderB"><label>Not</label></td>
+
+                                <td class="noBorderB"><label>Yüzde Dilim</label></td>
+                                <td class="noBorderB"><label>İlan Tarihi</label></td>
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                                    <tr style="overflow:no-display">
+
+                                        <td class="noBorderB">
+                                            Yarıyıl İçi (Ara Sınav) / Vize
+                                        </td>
+                                        <td class="textC noBorderB">84</td>
+                                        <td class="textC noBorderB">%10</td>
+                                        
+                                            <td class="textC noBorderB">13.1.2024</td>
+
+
+                                    </tr>
+                                    <tr style="overflow:no-display">
+
+                                        <td class="noBorderB">
+                                            Yarıyıl İçi (Ara Sınav) / Quiz-2
+                                        </td>
+                                        <td class="textC noBorderB">80,234</td>
+                                        <td class="textC noBorderB">%3</td>
+                                        
+                                            <td class="textC noBorderB">25.12.2023</td>
+
+
+                                    </tr>
+                                    <tr style="overflow:no-display">
+
+                                        <td class="noBorderB">
+                                            Yarıyıl İçi (Ara Sınav) / Quiz-1
+                                        </td>
+                                        <td class="textC noBorderB">78,5</td>
+                                        <td class="textC noBorderB">%3</td>
+                                        
+                                            <td class="textC noBorderB">22.11.2023</td>
+
+
+                                    </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+                </tbody>
+            </table>
+</form>    </div>
+
+<script>
+
+    var isOpen = false;
+    $('body').on('click', '#btnToggle', function () {
+        if (!isOpen) {
+            $('.sub-tr').show();
+            $('.list-student-lesson').children('span').attr('data-icon', '');
+            $('.list-student-lesson').attr('title', 'Dersleri Aç');
+            isOpen = true;
+        } else {
+            $('.sub-tr').hide();
+            $('.list-student-lesson').children('span').attr('data-icon', '');
+            $('.list-student-lesson').attr('title', 'Dersleri Kapat');
+            isOpen = false;
+        }
+    });
+
+
+    function CustomOnSuccess(result, status, xhr) {
+        OnSuccess(result, status, xhr);
+        $("#confirmationReport-list").find("tbody").html(result);
+    }
+
+    $('.list-student-lesson').live('click', function () {
+        var itemNo = $(this).data('obkno');
+        isOpen = false;
+        if ($(this).children('span').attr('data-icon') == '') {
+            $('.sub-tr').hide();
+            $('.list-student-lesson').children('span').attr('data-icon', '');
+            $(this).attr('title', 'Dersleri Kapat');
+            $(this).children('span').attr('data-icon', '');
+            $('#tr-lessons-' + itemNo).show();
+        }
+        else {
+            $(this).attr('title', 'Dersleri Aç');
+            $(this).children('span').attr('data-icon', '');
+            $('#tr-lessons-' + itemNo).hide();
+            return false;
+        }
+    });
+
+    $('.noteview-survey').live('click', function () {
+        ShowLoader();
+     
+
+        var syllabus = $(this).data('syllabus');
+
+        $dialog_view = $(".strategia-dialog").dialog({
+            title: 'Anket',
+            width: 500,
+            height: 500,
+            close: function (event, ui) {
+                $(this).empty().dialog('destroy');
+                $('.formError').remove();
+            },
+            modal: true,
+            bgiframe: true,
+            autoOpen: false,
+            resizable: true,
+            buttons: {
+                Kaydet: function () {
+                    ShowLoader();
+                    var form = $('form', this);
+                    $.ajax({
+                        url: '/student/survey',
+                        data: form.serialize(),
+                        cache: false,
+                        type: 'POST',
+                        success: function (result) {
+                            HideLoader();
+                            if (result.Action != undefined) {
+                                ExecuteResult(result);
+                                return false;
+                            }
+                            else {
+                                //$('#noteview-survey-' + result.syllabusNo).closest('td').html(result.letterGrade);
+                                //$('#noteview-survey-' + result.syllabusNo).hide();
+                                //$('#studentlesson-view-' + result.syllabusNo).addClass('list-student-lesson');
+                                //$('#studentlesson-view-' + result.syllabusNo).attr('title', 'Öğrenci Dersleri');
+
+                                $('#confirmationReport-list').find('tbody').html(result.Model);
+                            }
+
+                            $dialog_view.dialog("close");
+                        },
+                        error: function (xhr, status, error) {
+                            HideLoader();
+                            Dialog(xhr.status + ' (' + xhr.statusText + ')');
+                        }
+                    });
+
+                },
+                Kapat: function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        $.ajax({
+            url: '/student/survey',
+            data: { syllabusNo: syllabus },
+            cache: false,
+            type: 'GET',
+            success: function (result) {
+
+                if (result.Action != undefined) {
+                    ExecuteResult(result);
+                    return false;
+                }
+
+                $dialog_view.dialog("open");
+                $dialog_view.html(result);
+                $(".ui-dialog-content").find(".check, .check :checkbox, input:radio, input:file").uniform();
+                HideLoader();
+            },
+            error: function (xhr, status, error) {
+                HideLoader();
+                Dialog(xhr.status + ' (' + xhr.statusText + ')');
+            }
+        });
+
+        return false;
+    });
+</script>
+
+
+
+
+        </div>
+    </div>
+
+        <input id="menu-pathno" name="menu-pathno" type="hidden" value="344">
+
+
+
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+    <div id="top-link"><span class="fs1 iconb" data-icon=""></span><span class="Agency_FB"> Sayfa Başı</span></div>
+
+
+    <footer id="footer" style="z-index:10000; text-align: center;">
+
+        Sayfa OBSAPPW108 sunucusu tarafından 54 ms de yüklenmiştir.
+    </footer>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    
+
+
+
+<div id="fancybox-tmp"></div><div id="fancybox-loading"><div></div></div><div id="fancybox-overlay"></div><div id="fancybox-wrap"><div id="fancybox-outer"><div class="fancybox-bg" id="fancybox-bg-n"></div><div class="fancybox-bg" id="fancybox-bg-ne"></div><div class="fancybox-bg" id="fancybox-bg-e"></div><div class="fancybox-bg" id="fancybox-bg-se"></div><div class="fancybox-bg" id="fancybox-bg-s"></div><div class="fancybox-bg" id="fancybox-bg-sw"></div><div class="fancybox-bg" id="fancybox-bg-w"></div><div class="fancybox-bg" id="fancybox-bg-nw"></div><div id="fancybox-content"></div><a id="fancybox-close"></a><div id="fancybox-title"></div><a href="javascript:;" id="fancybox-left"><span class="fancy-ico" id="fancybox-left-ico"></span></a><a href="javascript:;" id="fancybox-right"><span class="fancy-ico" id="fancybox-right-ico"></span></a></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-resizable" tabindex="-1" role="dialog" aria-labelledby="ui-dialog-title-dialog-modal" style="display: none; z-index: 1000; outline: 0px; position: absolute;"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title" id="ui-dialog-title-dialog-modal">Bilgi</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="dialog-modal" style="min-width:290px;" class="ui-dialog-content ui-widget-content">
+        <p id="dialog-modal-text"></p>
+    </div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button">Tamam</button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable" tabindex="-1" role="dialog" aria-labelledby="ui-dialog-title-1" style="display: none; z-index: 1000; outline: 0px;"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title" id="ui-dialog-title-1">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div class="strategia-dialog ui-dialog-content ui-widget-content"></div></div><ul class="ui-autocomplete ui-menu ui-widget ui-widget-content ui-corner-all" role="listbox" aria-activedescendant="ui-active-menuitem" style="z-index: 1001; top: 0px; left: 0px; display: none;"></ul></body></html>
